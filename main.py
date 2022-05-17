@@ -43,7 +43,7 @@ async def on_message(message):
         else:
             use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
             log_writter.write_log(use_log)
-            parameter = msg_in[2:]
+            parameter = msg_in[3:]
             if parameter == "":
                 embed = discord.Embed(title="Allen Game Bot在此！", description="使用`ag!help`來取得指令支援。", color=0x584BF1)
                 final_msg_list.append(embed)
