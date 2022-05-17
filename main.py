@@ -16,14 +16,44 @@ async def on_ready():
                           str(client.user) + "\n以下為使用紀錄(只要開頭訊息有\"y!\"，則這則訊息和系統回應皆會被記錄)：\n\n")
 
 
+test_mode = False
+
+
 @client.event
 async def on_message(message):
+    global test_mode
+    final_msg_list = []
     msg_in = message.content
     if message.author == client.user:
         return
     elif msg_in.startswith("ag!"):
-        use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
-        log_writter.write_log(use_log)
+        if msg_in == "ag!test":
+            use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
+            log_writter.write_log(use_log)
+            if test_mode:
+                test_mode = False
+                embed = discord.Embed(title="測試模式", description="測試模式已**關閉**。", color=0xFEE4E4)
+                final_msg_list.append(embed)
+            else:
+                test_mode = True
+                embed = discord.Embed(title="測試模式", description="測試模式已**開啟**。", color=0xFEE4E4)
+                final_msg_list.append(embed)
+        elif test_mode:
+            return
+        else:
+            use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
+            log_writter.write_log(use_log)
+    for i in range(len(final_msg_list)):
+        current_msg = final_msg_list[i]
+        if isinstance(current_msg, discord.File):
+            await message.channel.send(file=final_msg_list[i])
+        elif isinstance(current_msg, discord.Embed):
+            await message.channel.send(embed=final_msg_list[i])
+        elif isinstance(current_msg, str):
+            await message.channel.send(final_msg_list[i])
+        new_log = str(message.channel) + "/" + str(client.user) + ":\n" + str(final_msg_list[i]) + "\n\n"
+        log_writter.write_log(new_log)
+    final_msg_list.clear()
 
 
 # 取得TOKEN
