@@ -9,11 +9,11 @@ client = discord.Client()
 
 @client.event
 async def on_ready():
-    music = discord.Activity(type=discord.ActivityType.listening, name="YURI IS GREAT!")
-    await client.change_presence(status=discord.Status.idle, activity=music)
+    music = discord.Activity(type=discord.ActivityType.playing, name="什麼都沒有的機器人")
+    await client.change_presence(status=discord.Status.online, activity=music)
     log_writter.write_log("-------------------------------------------------------------\n", True)
     log_writter.write_log("\n登入成功！\n目前登入身份：" +
-                          str(client.user) + "\n以下為使用紀錄(只要開頭訊息有\"y!\"，則這則訊息和系統回應皆會被記錄)：\n\n")
+                          str(client.user) + "\n以下為使用紀錄(只要開頭訊息有\"ag!\"，則這則訊息和系統回應皆會被記錄)：\n\n")
 
 
 test_mode = False
@@ -32,11 +32,11 @@ async def on_message(message):
             log_writter.write_log(use_log)
             if test_mode:
                 test_mode = False
-                embed = discord.Embed(title="測試模式", description="測試模式已**關閉**。", color=0xFEE4E4)
+                embed = discord.Embed(title="測試模式", description="測試模式已**關閉**。", color=0x584BF1)
                 final_msg_list.append(embed)
             else:
                 test_mode = True
-                embed = discord.Embed(title="測試模式", description="測試模式已**開啟**。", color=0xFEE4E4)
+                embed = discord.Embed(title="測試模式", description="測試模式已**開啟**。", color=0x584BF1)
                 final_msg_list.append(embed)
         elif test_mode:
             return
