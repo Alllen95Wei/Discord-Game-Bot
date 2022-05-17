@@ -43,6 +43,17 @@ async def on_message(message):
         else:
             use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
             log_writter.write_log(use_log)
+            parameter = msg_in[2:]
+            if parameter == "":
+                embed = discord.Embed(title="Allen Game Bot在此！", description="使用`ag!help`來取得指令支援。", color=0x584BF1)
+                final_msg_list.append(embed)
+            elif parameter[:4] == "help":
+                embed = discord.Embed(title="help", description="嗯。什麼都沒有。我會考完會開工的。", color=0x584BF1)
+                final_msg_list.append(embed)
+            elif parameter[:4] == "ping":
+                embed = discord.Embed(title="ping", description="延遲：{0}ms"
+                                      .format(str(round(client.latency * 1000))), color=0x584BF1)
+                final_msg_list.append(embed)
     for i in range(len(final_msg_list)):
         current_msg = final_msg_list[i]
         if isinstance(current_msg, discord.File):
