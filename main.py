@@ -1,9 +1,12 @@
+import time
+
 import discord
 from dotenv import load_dotenv
 import os
 from random import randint
 
 import log_writter
+import save_to_db as stdb
 
 client = discord.Client()
 
@@ -61,6 +64,8 @@ async def on_message(message):
                     embed.add_field(name="發起者", value="<@{0}>".format(starter.id), inline=False)
                     embed.add_field(name="目標數字", value="({0}位數數字)".format(len(target_num)), inline=False)
                     embed.add_field(name="模式", value="同樂模式", inline=False)
+                    embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())))
+                    stdb.save_data(starter.id, target_num)
                     final_msg_list.append(embed)
                 else:
                     game_set = parameter.split(" ")
@@ -74,9 +79,15 @@ async def on_message(message):
                             embed = discord.Embed(title="guessnum", description="請指定一個**8位以內**的數字。", color=error_color)
                             final_msg_list.append(embed)
                         else:
-                            embed = discord.Embed(title="guessnum", description="完成設定！", color=default_color)
-                            embed.add_field(name="目標數字", value="({0}位數數字)".format(len(target_num)), inline=False)
-                            embed.add_field(name="模式", value="同樂模式", inline=False)
+                            try:
+                                await message.delete()
+                                embed = discord.Embed(title="guessnum", description="完成設定！", color=default_color)
+                                embed.add_field(name="目標數字", value="({0}位數數字)".format(len(target_num)), inline=False)
+                                embed.add_field(name="模式", value="同樂模式", inline=False)
+                                embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())))
+                                stdb.save_data(starter.id, target_num)
+                            except Exception as e:
+                                embed = discord.Embed(title="錯誤", description="無法刪除你的訊息。({0})".format(e), color=error_color)
                             final_msg_list.append(embed)
                     else:
                         embed = discord.Embed(title="guessnum", description="請輸入一個數字。", color=error_color)
