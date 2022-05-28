@@ -13,7 +13,7 @@ client = discord.Client()
 
 @client.event
 async def on_ready():
-    music = discord.Activity(type=discord.ActivityType.playing, name="快要有點什麼的機器人")
+    music = discord.Activity(type=discord.ActivityType.playing, name="猜數字遊戲(？)")
     await client.change_presence(status=discord.Status.online, activity=music)
     log_writter.write_log("-------------------------------------------------------------\n", True)
     log_writter.write_log("\n登入成功！\n目前登入身份：" +
@@ -67,10 +67,13 @@ async def on_message(message):
                     embed = discord.Embed(title="guessnum", description="恭喜你答對了！", color=default_color)
                     embed.add_field(name="答案", value=msg_in, inline=False)
                     embed.add_field(name="次數", value=str(game_data["guess_times"]), inline=False)
+                    try:
+                        os.remove("{0}{1}.txt".format(game_data_dir, str(message.channel.id)))
+                        print("Delete file success.")
+                    except Exception as e:
+                        print(e)
                     final_msg_list.append(embed)
-                    os.remove(game_data_dir + str(message.channel.id) + ".txt")
                 else:
-                    print("else")
                     answer_status_str = ""
                     for n in range(len(answer_status)):
                         if answer_status[n] == 2:
