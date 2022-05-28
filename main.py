@@ -27,11 +27,72 @@ test_mode = False
 async def on_message(message):
     global test_mode
     final_msg_list = []
-    msg_in = message.content
+    msg_in = str(message.content)
     default_color = 0x584BF1
     error_color = 0xF1411C
     if message.author == client.user:
         return
+    elif msg_in.isdigit():
+        use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
+        log_writter.write_log(use_log)
+        game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
+        now_playing_channel = [f for f in os.listdir(game_data_dir) if os.path.isfile(os.path.join(game_data_dir, f))]
+        if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
+            with open(game_data_dir + str(message.channel.id) + ".txt", "r", encoding="utf-8") as txt:
+                game_data = eval(txt.read())
+            if len(msg_in) != len(str(game_data["target_num"])):
+                embed = discord.Embed(title="guessnum", description="請輸入{0}位數的數字。"
+                                      .format(len(str(game_data["target_num"]))), color=error_color)
+                final_msg_list.append(embed)
+            else:
+                if "guess_times" in game_data.keys():
+                    game_data["guess_times"] += 1
+                else:
+                    game_data["guess_times"] = 1
+                current_guess_num = []
+                target_num_list = []
+                for i in range(len(msg_in)):
+                    current_guess_num.append(int(msg_in[i]))
+                for i in range(len(game_data["target_num"])):
+                    target_num_list.append(int(game_data["target_num"][i]))
+                answer_status = []
+                for i in range(len(current_guess_num)):
+                    if current_guess_num[i] == target_num_list[i]:
+                        answer_status.append(2)
+                    elif current_guess_num[i] in target_num_list:
+                        answer_status.append(1)
+                    else:
+                        answer_status.append(0)
+                if answer_status == [2, 2, 2, 2]:
+                    embed = discord.Embed(title="guessnum", description="恭喜你答對了！", color=default_color)
+                    embed.add_field(name="答案", value=msg_in, inline=False)
+                    embed.add_field(name="次數", value=str(game_data["guess_times"]), inline=False)
+                    final_msg_list.append(embed)
+                    os.remove(game_data_dir + str(message.channel.id) + ".txt")
+                else:
+                    print("else")
+                    answer_status_str = ""
+                    for n in range(len(answer_status)):
+                        if answer_status[n] == 2:
+                            answer_status[n] = ":green_circle:"
+                        elif answer_status[n] == 1:
+                            answer_status[n] = ":yellow_circle:"
+                        else:
+                            answer_status[n] = ":red_circle:"
+                        answer_status_str += answer_status[n]
+                    if ":green_circle:" in answer_status_str:
+                        title = "似乎猜中了一些！"
+                    elif "yellow_circle" in answer_status_str:
+                        title = "接近了！"
+                    else:
+                        title = "呃...再加把勁！"
+                    embed = discord.Embed(title="guessnum", description=title, color=default_color)
+                    embed.add_field(name="你的答案", value=msg_in, inline=False)
+                    embed.add_field(name="結果", value=answer_status_str, inline=False)
+                    embed.set_footer(text="第{0}次猜測".format(str(game_data["guess_times"])))
+                    final_msg_list.append(embed)
+            with open(game_data_dir + str(message.channel.id) + ".txt", "w", encoding="utf-8") as txt:
+                txt.write(str(game_data))
     elif msg_in.startswith("ag!"):
         if msg_in == "ag!test":
             use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
@@ -57,41 +118,53 @@ async def on_message(message):
                 embed = discord.Embed(title="help", description="嗯。什麼都沒有。我已經開工了！敬請期待！。", color=default_color)
                 final_msg_list.append(embed)
             elif parameter[:8] == "guessnum" or parameter[:2] == "gn":
-                starter = message.author
-                if parameter == "guessnum" or parameter == "gn":
-                    target_num = [randint(0, 9), randint(0, 9), randint(0, 9), randint(0, 9)]
-                    embed = discord.Embed(title="guessnum", description="完成設定！", color=default_color)
-                    embed.add_field(name="發起者", value="<@{0}>".format(starter.id), inline=False)
-                    embed.add_field(name="目標數字", value="({0}位數數字)".format(len(target_num)), inline=False)
-                    embed.add_field(name="模式", value="同樂模式", inline=False)
-                    embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())))
-                    stdb.save_data(starter.id, target_num)
+                game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
+                now_playing_channel = [f for f in os.listdir(game_data_dir) if
+                                       os.path.isfile(os.path.join(game_data_dir, f))]
+                if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
+                    embed = discord.Embed(title="錯誤", description="此頻道目前已正在進行遊戲。", color=error_color)
                     final_msg_list.append(embed)
                 else:
-                    game_set = parameter.split(" ")
-                    del game_set[0]
-                    target_num_str = game_set[0]
-                    if target_num_str.isdigit():
-                        target_num = []
-                        for i in range(len(target_num_str)):
-                            target_num.append(int(target_num_str[i]))
-                        if len(target_num) > 8:
-                            embed = discord.Embed(title="guessnum", description="請指定一個**8位以內**的數字。", color=error_color)
-                            final_msg_list.append(embed)
-                        else:
-                            try:
-                                await message.delete()
-                                embed = discord.Embed(title="guessnum", description="完成設定！", color=default_color)
-                                embed.add_field(name="目標數字", value="({0}位數數字)".format(len(target_num)), inline=False)
-                                embed.add_field(name="模式", value="同樂模式", inline=False)
-                                embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())))
-                                stdb.save_data(starter.id, target_num)
-                            except Exception as e:
-                                embed = discord.Embed(title="錯誤", description="無法刪除你的訊息。({0})".format(e), color=error_color)
-                            final_msg_list.append(embed)
-                    else:
-                        embed = discord.Embed(title="guessnum", description="請輸入一個數字。", color=error_color)
+                    starter = message.author
+                    if parameter == "guessnum" or parameter == "gn":
+                        target_num = "{0}{1}{2}{3}".format(randint(0, 9), randint(0, 9), randint(0, 9), randint(0, 9))
+                        embed = discord.Embed(title="guessnum", description="完成設定！", color=default_color)
+                        embed.add_field(name="發起者", value="<@{0}>".format(starter.id), inline=False)
+                        embed.add_field(name="目標數字", value="({0}位數數字)".format(len(target_num)), inline=False)
+                        embed.add_field(name="模式", value="同樂模式", inline=False)
+                        embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())), inline=False)
+                        embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id), inline=False)
+                        stdb.save_data(starter.id, target_num, message.channel.id)
                         final_msg_list.append(embed)
+                    else:
+                        game_set = parameter.split(" ")
+                        del game_set[0]
+                        target_num = game_set[0]
+                        if target_num.isdigit():
+                            if len(target_num) > 8:
+                                embed = discord.Embed(title="guessnum", description="請指定一個**8位以內**的數字。",
+                                                      color=error_color)
+                                final_msg_list.append(embed)
+                            else:
+                                try:
+                                    await message.delete()
+                                    embed = discord.Embed(title="guessnum", description="完成設定！",
+                                                          color=default_color)
+                                    embed.add_field(name="目標數字", value="({0}位數數字)".format(len(target_num)),
+                                                    inline=False)
+                                    embed.add_field(name="模式", value="同樂模式", inline=False)
+                                    embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())),
+                                                    inline=False)
+                                    embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id),
+                                                    inline=False)
+                                    stdb.save_data(starter.id, target_num, message.channel.id)
+                                except Exception as e:
+                                    embed = discord.Embed(title="錯誤", description="無法刪除你的訊息。({0})".format(e),
+                                                          color=error_color)
+                                final_msg_list.append(embed)
+                        else:
+                            embed = discord.Embed(title="guessnum", description="請輸入一個數字。", color=error_color)
+                            final_msg_list.append(embed)
             elif parameter[:4] == "ping":
                 embed = discord.Embed(title="ping", description="延遲：{0}ms"
                                       .format(str(round(client.latency * 1000))), color=default_color)
