@@ -8,7 +8,9 @@ import subprocess
 import log_writter
 import save_to_db as stdb
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.members = True
+client = discord.Client(intents=intents)
 
 
 @client.event
@@ -123,7 +125,8 @@ async def on_message(message):
             log_writter.write_log(use_log)
             parameter = msg_in[3:]
             if parameter == "":
-                embed = discord.Embed(title="Allen Game Bot在此！", description="使用`ag!help`來取得指令支援。", color=default_color)
+                embed = discord.Embed(title="Allen Game Bot在此！", description="使用`ag!help`來取得指令支援。",
+                                      color=default_color)
                 final_msg_list.append(embed)
             elif parameter[:4] == "help":
                 embed = discord.Embed(title="help", description="一隻可以用來玩猜數字的機器人。", color=default_color)
@@ -145,10 +148,19 @@ async def on_message(message):
                         embed = discord.Embed(title="guessnum", description="完成設定！", color=default_color)
                         embed.add_field(name="發起者", value="<@{0}>".format(starter.id), inline=False)
                         embed.add_field(name="目標數字", value="({0}位數數字)".format(len(target_num)), inline=False)
-                        embed.add_field(name="模式", value="同樂模式", inline=False)
+                        try:
+                            true_member_count = len([m for m in message.channel.guild.members if not m.bot])
+                        except AttributeError:
+                            true_member_count = 1
+                        if true_member_count == 1:
+                            mode = "單人模式"
+                        else:
+                            mode = "同樂模式"
+                        embed.add_field(name="模式", value=mode, inline=False)
                         embed.add_field(name="發起時間", value="<t:{0}:R>".format(int(time.time())), inline=False)
                         embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id), inline=False)
-                        embed.add_field(name="說明", value="[點我](https://is.gd/ZE2aFA)來獲得關於結果的判讀說明。", inline=False)
+                        embed.add_field(name="說明", value="[點我](https://is.gd/ZE2aFA)來獲得關於結果的判讀說明。",
+                                        inline=False)
                         stdb.save_data(starter.id, target_num, message.channel.id)
                         final_msg_list.append(embed)
                     else:
@@ -180,6 +192,31 @@ async def on_message(message):
                         else:
                             embed = discord.Embed(title="guessnum", description="請輸入一個數字。", color=error_color)
                             final_msg_list.append(embed)
+            elif parameter[:6] == "cancel":
+                game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
+                now_playing_channel = [f for f in os.listdir(game_data_dir) if
+                                       os.path.isfile(os.path.join(game_data_dir, f))]
+                if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
+                    with open(game_data_dir + str(message.channel.id) + ".txt", "r", encoding="utf-8") as txt:
+                        game_data = eval(txt.read())
+                    if message.author.id == game_data["starter"] or message.author.id == message.guild.owner.id:
+                        try:
+                            subprocess.Popen("rm {0}".format(os.path.join(game_data_dir, "{0}.txt"
+                                                                          .format(message.channel.id))))
+                            embed = discord.Embed(title="cancel", description="已取消遊戲。", color=default_color)
+                            final_msg_list.append(embed)
+                        except Exception as e:
+                            embed = discord.Embed(title="guessnum", description="發生錯誤。\n{0}".format(e),
+                                                  color=error_color)
+                            final_msg_list.append(embed)
+                    else:
+                        msg = "你沒有權限進行此操作。請聯絡發起者(<@{0}>)或伺服器擁有者(<@{1})進行此操作。"\
+                            .format(game_data["starter"], message.guild.owner.id)
+                        embed = discord.Embed(title="cancel", description=msg, color=error_color)
+                        final_msg_list.append(embed)
+                else:
+                    embed = discord.Embed(title="錯誤", description="此頻道目前未正在進行遊戲。", color=error_color)
+                    final_msg_list.append(embed)
             elif parameter[:4] == "ping":
                 embed = discord.Embed(title="ping", description="延遲：{0}ms"
                                       .format(str(round(client.latency * 1000))), color=default_color)
