@@ -1,9 +1,9 @@
 import time
-
 import discord
 from dotenv import load_dotenv
 import os
 from random import randint
+import subprocess
 
 import log_writter
 import save_to_db as stdb
@@ -40,6 +40,7 @@ async def on_message(message):
         if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
             with open(game_data_dir + str(message.channel.id) + ".txt", "r", encoding="utf-8") as txt:
                 game_data = eval(txt.read())
+                txt.close()
             if len(msg_in) != len(str(game_data["target_num"])):
                 embed = discord.Embed(title="guessnum", description="請輸入{0}位數的數字。"
                                       .format(len(str(game_data["target_num"]))), color=error_color)
@@ -68,8 +69,8 @@ async def on_message(message):
                     embed.add_field(name="答案", value=msg_in, inline=False)
                     embed.add_field(name="次數", value=str(game_data["guess_times"]), inline=False)
                     try:
-                        os.remove("{0}{1}.txt".format(game_data_dir, str(message.channel.id)))
-                        print("Delete file success.")
+                        subprocess.Popen("rm {0}".format(os.path.join(game_data_dir, "{0}.txt"
+                                                                      .format(message.channel.id))))
                     except Exception as e:
                         print(e)
                     final_msg_list.append(embed)
@@ -96,6 +97,7 @@ async def on_message(message):
                     final_msg_list.append(embed)
             with open(game_data_dir + str(message.channel.id) + ".txt", "w", encoding="utf-8") as txt:
                 txt.write(str(game_data))
+                txt.close()
     elif msg_in.startswith("ag!"):
         if msg_in == "ag!test":
             use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
@@ -118,7 +120,10 @@ async def on_message(message):
                 embed = discord.Embed(title="Allen Game Bot在此！", description="使用`ag!help`來取得指令支援。", color=default_color)
                 final_msg_list.append(embed)
             elif parameter[:4] == "help":
-                embed = discord.Embed(title="help", description="嗯。什麼都沒有。我已經開工了！敬請期待！。", color=default_color)
+                embed = discord.Embed(title="help", description="一隻可以用來玩猜數字的機器人。", color=default_color)
+                embed.add_field(name="`help`", value="顯示此協助訊息。", inline=False)
+                embed.add_field(name="`guessnum(gn)`", value="開始猜數字遊戲。", inline=False)
+                embed.add_field(name="`ping`", value="查看本機器人的延遲毫秒數。", inline=False)
                 final_msg_list.append(embed)
             elif parameter[:8] == "guessnum" or parameter[:2] == "gn":
                 game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
