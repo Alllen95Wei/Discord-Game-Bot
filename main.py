@@ -66,14 +66,15 @@ async def on_message(message):
                         answer_status.append(0)
                 if answer_status == [2, 2, 2, 2]:
                     embed = discord.Embed(title="guessnum", description="恭喜你答對了！", color=default_color)
-                    embed.add_field(name="答案", value=msg_in, inline=False)
+                    embed.add_field(name="答案", value="`{0}`".format(msg_in), inline=False)
                     embed.add_field(name="次數", value=str(game_data["guess_times"]), inline=False)
+                    final_msg_list.append(embed)
                     try:
                         subprocess.Popen("rm {0}".format(os.path.join(game_data_dir, "{0}.txt"
                                                                       .format(message.channel.id))))
                     except Exception as e:
-                        print(e)
-                    final_msg_list.append(embed)
+                        embed = discord.Embed(title="guessnum", description="發生錯誤。\n{0}".format(e), color=error_color)
+                        final_msg_list.append(embed)
                 else:
                     answer_status_str = ""
                     for n in range(len(answer_status)):
@@ -91,7 +92,7 @@ async def on_message(message):
                     else:
                         title = "呃...再加把勁！"
                     embed = discord.Embed(title="guessnum", description=title, color=default_color)
-                    embed.add_field(name="你的答案", value=msg_in, inline=False)
+                    embed.add_field(name="你的答案", value="`{0}`".format(msg_in), inline=False)
                     embed.add_field(name="結果", value=answer_status_str, inline=False)
                     embed.set_footer(text="第{0}次猜測".format(str(game_data["guess_times"])))
                     final_msg_list.append(embed)
@@ -142,6 +143,7 @@ async def on_message(message):
                         embed.add_field(name="模式", value="同樂模式", inline=False)
                         embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())), inline=False)
                         embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id), inline=False)
+                        embed.add_field(name="說明", value="[點我](https://is.gd/ZE2aFA)來獲得關於結果的判讀說明。", inline=False)
                         stdb.save_data(starter.id, target_num, message.channel.id)
                         final_msg_list.append(embed)
                     else:
