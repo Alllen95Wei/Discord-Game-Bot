@@ -46,7 +46,6 @@ async def on_message(message):
             if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
                 with open(game_data_dir + str(message.channel.id) + ".txt", "r", encoding="utf-8") as txt:
                     game_data = eval(txt.read())
-                    txt.close()
                 if len(msg_in) != len(str(game_data["target_num"])):
                     embed = discord.Embed(title="guessnum", description="請輸入{0}位數的數字。"
                                           .format(len(str(game_data["target_num"]))), color=error_color)
@@ -78,6 +77,12 @@ async def on_message(message):
                         embed = discord.Embed(title="guessnum", description="恭喜你答對了！", color=default_color)
                         embed.add_field(name="答案", value="`{0}`".format(msg_in), inline=False)
                         embed.add_field(name="次數", value=str(game_data["guess_times"]), inline=False)
+                        used_time = int(time.time()) - int(game_data["time"])
+                        if used_time >= 60:
+                            used_time = "`{0}`分`{1}`秒".format(int(used_time // 60), int(used_time % 60))
+                        else:
+                            used_time = "`{0}`秒".format(used_time)
+                        embed.add_field(name="用時", value="{0}".format(used_time), inline=False)
                         final_msg_list.append(embed)
                         try:
                             subprocess.Popen("rm {0}".format(os.path.join(game_data_dir, "{0}.txt"
@@ -135,8 +140,9 @@ async def on_message(message):
             elif parameter[:4] == "help":
                 embed = discord.Embed(title="help", description="一隻可以用來玩猜數字的機器人。", color=default_color)
                 embed.add_field(name="`help`", value="顯示此協助訊息。", inline=False)
-                embed.add_field(name="`guessnum(gn)`", value="開始猜數字遊戲。", inline=False)
-                embed.add_field(name="cancel", value="取消該頻道的遊戲。", inline=False)
+                embed.add_field(name="`guessnum(gn) [指定位數]`", value="開始猜數字遊戲。\n  `[指定位數]`：可指定機器人產生隨機數的位數。",
+                                inline=False)
+                embed.add_field(name="`cancel`", value="取消該頻道正在進行的遊戲。", inline=False)
                 embed.add_field(name="`ping`", value="查看本機器人的延遲毫秒數。", inline=False)
                 final_msg_list.append(embed)
             elif parameter[:8] == "guessnum" or parameter[:2] == "gn":
