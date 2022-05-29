@@ -70,7 +70,11 @@ async def on_message(message):
                             answer_status.append(1)
                         else:
                             answer_status.append(0)
-                    if answer_status == [2, 2, 2, 2]:
+                    correct_answer_count = 0
+                    for i in range(len(answer_status)):
+                        if answer_status[i] == 2:
+                            correct_answer_count += 1
+                    if correct_answer_count == len(answer_status):
                         embed = discord.Embed(title="guessnum", description="恭喜你答對了！", color=default_color)
                         embed.add_field(name="答案", value="`{0}`".format(msg_in), inline=False)
                         embed.add_field(name="次數", value=str(game_data["guess_times"]), inline=False)
@@ -132,6 +136,7 @@ async def on_message(message):
                 embed = discord.Embed(title="help", description="一隻可以用來玩猜數字的機器人。", color=default_color)
                 embed.add_field(name="`help`", value="顯示此協助訊息。", inline=False)
                 embed.add_field(name="`guessnum(gn)`", value="開始猜數字遊戲。", inline=False)
+                embed.add_field(name="cancel", value="取消該頻道的遊戲。", inline=False)
                 embed.add_field(name="`ping`", value="查看本機器人的延遲毫秒數。", inline=False)
                 final_msg_list.append(embed)
             elif parameter[:8] == "guessnum" or parameter[:2] == "gn":
@@ -139,7 +144,7 @@ async def on_message(message):
                 now_playing_channel = [f for f in os.listdir(game_data_dir) if
                                        os.path.isfile(os.path.join(game_data_dir, f))]
                 if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
-                    embed = discord.Embed(title="錯誤", description="此頻道目前已正在進行遊戲。", color=error_color)
+                    embed = discord.Embed(title="錯誤", description="此頻道目前已正在進行遊戲。輸入`ag!info`以查看詳情。", color=error_color)
                     final_msg_list.append(embed)
                 else:
                     starter = message.author
@@ -166,31 +171,38 @@ async def on_message(message):
                     else:
                         game_set = parameter.split(" ")
                         del game_set[0]
-                        target_num = game_set[0]
-                        if target_num.isdigit():
-                            if len(target_num) > 8:
-                                embed = discord.Embed(title="guessnum", description="請指定一個**8位以內**的數字。",
+                        target_num_count = game_set[0]
+                        if target_num_count.isdigit():
+                            if int(target_num_count) > 8:
+                                embed = discord.Embed(title="guessnum", description="指定位數最大為8。",
                                                       color=error_color)
                                 final_msg_list.append(embed)
                             else:
+                                target_num = ""
+                                for i in range(int(target_num_count)):
+                                    target_num += str(randint(0, 9))
+                                embed = discord.Embed(title="guessnum", description="完成設定！",
+                                                      color=default_color)
+                                embed.add_field(name="發起者", value="<@{0}>".format(starter.id), inline=False)
+                                embed.add_field(name="目標數字", value="({0}位數數字)".format(int(target_num_count)),
+                                                inline=False)
                                 try:
-                                    await message.delete()
-                                    embed = discord.Embed(title="guessnum", description="完成設定！",
-                                                          color=default_color)
-                                    embed.add_field(name="目標數字", value="({0}位數數字)".format(len(target_num)),
-                                                    inline=False)
-                                    embed.add_field(name="模式", value="同樂模式", inline=False)
-                                    embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())),
-                                                    inline=False)
-                                    embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id),
-                                                    inline=False)
-                                    stdb.save_data(starter.id, target_num, message.channel.id)
-                                except Exception as e:
-                                    embed = discord.Embed(title="錯誤", description="無法刪除你的訊息。({0})".format(e),
-                                                          color=error_color)
+                                    true_member_count = len([m for m in message.channel.guild.members if not m.bot])
+                                except AttributeError:
+                                    true_member_count = 1
+                                if true_member_count == 1:
+                                    mode = "單人模式"
+                                else:
+                                    mode = "同樂模式"
+                                embed.add_field(name="模式", value=mode, inline=False)
+                                embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())),
+                                                inline=False)
+                                embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id),
+                                                inline=False)
+                                stdb.save_data(starter.id, target_num, message.channel.id)
                                 final_msg_list.append(embed)
                         else:
-                            embed = discord.Embed(title="guessnum", description="請輸入一個數字。", color=error_color)
+                            embed = discord.Embed(title="guessnum", description="請輸入一個數值。", color=error_color)
                             final_msg_list.append(embed)
             elif parameter[:6] == "cancel":
                 game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
@@ -214,6 +226,25 @@ async def on_message(message):
                             .format(game_data["starter"], message.guild.owner.id)
                         embed = discord.Embed(title="cancel", description=msg, color=error_color)
                         final_msg_list.append(embed)
+                else:
+                    embed = discord.Embed(title="錯誤", description="此頻道目前未正在進行遊戲。", color=error_color)
+                    final_msg_list.append(embed)
+            elif parameter[:4] == "info":
+                game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
+                now_playing_channel = [f for f in os.listdir(game_data_dir) if
+                                       os.path.isfile(os.path.join(game_data_dir, f))]
+                if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
+                    with open(game_data_dir + str(message.channel.id) + ".txt", "r", encoding="utf-8") as txt:
+                        game_data = eval(txt.read())
+                    embed = discord.Embed(title="info", description="目前進行中的遊戲資訊", color=default_color)
+                    embed.add_field(name="發起者", value="<@{0}>".format(game_data["starter"]), inline=False)
+                    embed.add_field(name="目標數字", value="({0}位數數字)".format(len(game_data["target_num"])),
+                                    inline=False)
+                    embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())), inline=False)
+                    embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id), inline=False)
+                    embed.add_field(name="說明", value="[點我](https://is.gd/ZE2aFA)來獲得關於結果的判讀說明。",
+                                    inline=False)
+                    final_msg_list.append(embed)
                 else:
                     embed = discord.Embed(title="錯誤", description="此頻道目前未正在進行遊戲。", color=error_color)
                     final_msg_list.append(embed)
