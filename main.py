@@ -140,17 +140,20 @@ async def on_message(message):
             elif parameter[:4] == "help":
                 embed = discord.Embed(title="help", description="一隻可以用來玩猜數字的機器人。", color=default_color)
                 embed.add_field(name="`help`", value="顯示此協助訊息。", inline=False)
-                embed.add_field(name="`guessnum(gn) [指定位數]`", value="開始猜數字遊戲。\n  `[指定位數]`：可指定機器人產生隨機數的位數。",
+                embed.add_field(name="`guessnum(gn) [指定位數]`",
+                                value="開始猜數字遊戲。\n  `[指定位數]`：可指定機器人產生隨機數的位數。",
                                 inline=False)
                 embed.add_field(name="`cancel`", value="取消該頻道正在進行的遊戲。", inline=False)
                 embed.add_field(name="`ping`", value="查看本機器人的延遲毫秒數。", inline=False)
+                embed.add_field(name="`about`", value="取得Allen Game Bot的詳細資訊。", inline=False)
                 final_msg_list.append(embed)
             elif parameter[:8] == "guessnum" or parameter[:2] == "gn":
                 game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
                 now_playing_channel = [f for f in os.listdir(game_data_dir) if
                                        os.path.isfile(os.path.join(game_data_dir, f))]
                 if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
-                    embed = discord.Embed(title="錯誤", description="此頻道目前已正在進行遊戲。輸入`ag!info`以查看詳情。", color=error_color)
+                    embed = discord.Embed(title="錯誤", description="此頻道目前已正在進行遊戲。輸入`ag!info`以查看詳情。",
+                                          color=error_color)
                     final_msg_list.append(embed)
                 else:
                     starter = message.author
@@ -228,8 +231,8 @@ async def on_message(message):
                                                   color=error_color)
                             final_msg_list.append(embed)
                     else:
-                        msg = "你沒有權限進行此操作。請聯絡發起者(<@{0}>)或伺服器擁有者(<@{1})進行此操作。"\
-                            .format(game_data["starter"], message.guild.owner.id)
+                        msg = "你沒有權限進行此操作。請聯絡發起者(<@{0}>)或伺服器擁有者(<@{1})進行此操作。".format(
+                            game_data["starter"], message.guild.owner.id)
                         embed = discord.Embed(title="cancel", description=msg, color=error_color)
                         final_msg_list.append(embed)
                 else:
@@ -254,6 +257,18 @@ async def on_message(message):
                 else:
                     embed = discord.Embed(title="錯誤", description="此頻道目前未正在進行遊戲。", color=error_color)
                     final_msg_list.append(embed)
+            elif parameter[:5] == "about":
+                embed = discord.Embed(title="about",
+                                      description="**Allen Game Bot**是Allen Wei使用discord.py所製作出的Discord Bot。",
+                                      color=default_color)
+                embed.add_field(name="程式碼與授權", value="程式碼可在[GitHub](https://github.com/Alllen95Wei/YuriBot)查看。"
+                                                           "\n本程式依據GPL-3.0 License授權。你可以在[這裡]"
+                                                           "(https://github.com/Alllen95Wei/DiscordGameBot/blob/master"
+                                                           "/LICENSE)查看條款。")
+                embed.add_field(name="聯絡", value="如果你有任何問題，請聯絡Allen Why#5877。")
+                embed.set_thumbnail(url="https://discord.com/assets/1f0bfc0865d324c2587920a7d80c609b.png")
+                embed.set_footer(text="©Copyright Allen Wei, 2022.")
+                final_msg_list.append(embed)
             elif parameter[:4] == "ping":
                 embed = discord.Embed(title="ping", description="延遲：{0}ms"
                                       .format(str(round(client.latency * 1000))), color=default_color)
