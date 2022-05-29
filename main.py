@@ -33,72 +33,77 @@ async def on_message(message):
     if message.author == client.user:
         return
     elif msg_in.isdigit():
-        use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
-        log_writter.write_log(use_log)
-        game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
-        now_playing_channel = [f for f in os.listdir(game_data_dir) if os.path.isfile(os.path.join(game_data_dir, f))]
-        if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
-            with open(game_data_dir + str(message.channel.id) + ".txt", "r", encoding="utf-8") as txt:
-                game_data = eval(txt.read())
-                txt.close()
-            if len(msg_in) != len(str(game_data["target_num"])):
-                embed = discord.Embed(title="guessnum", description="請輸入{0}位數的數字。"
-                                      .format(len(str(game_data["target_num"]))), color=error_color)
-                final_msg_list.append(embed)
-            else:
-                if "guess_times" in game_data.keys():
-                    game_data["guess_times"] += 1
-                else:
-                    game_data["guess_times"] = 1
-                current_guess_num = []
-                target_num_list = []
-                for i in range(len(msg_in)):
-                    current_guess_num.append(int(msg_in[i]))
-                for i in range(len(game_data["target_num"])):
-                    target_num_list.append(int(game_data["target_num"][i]))
-                answer_status = []
-                for i in range(len(current_guess_num)):
-                    if current_guess_num[i] == target_num_list[i]:
-                        answer_status.append(2)
-                    elif current_guess_num[i] in target_num_list:
-                        answer_status.append(1)
-                    else:
-                        answer_status.append(0)
-                if answer_status == [2, 2, 2, 2]:
-                    embed = discord.Embed(title="guessnum", description="恭喜你答對了！", color=default_color)
-                    embed.add_field(name="答案", value="`{0}`".format(msg_in), inline=False)
-                    embed.add_field(name="次數", value=str(game_data["guess_times"]), inline=False)
+        if test_mode:
+            return
+        else:
+            use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
+            log_writter.write_log(use_log)
+            game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
+            now_playing_channel = [f for f in os.listdir(game_data_dir) if
+                                   os.path.isfile(os.path.join(game_data_dir, f))]
+            if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
+                with open(game_data_dir + str(message.channel.id) + ".txt", "r", encoding="utf-8") as txt:
+                    game_data = eval(txt.read())
+                    txt.close()
+                if len(msg_in) != len(str(game_data["target_num"])):
+                    embed = discord.Embed(title="guessnum", description="請輸入{0}位數的數字。"
+                                          .format(len(str(game_data["target_num"]))), color=error_color)
                     final_msg_list.append(embed)
-                    try:
-                        subprocess.Popen("rm {0}".format(os.path.join(game_data_dir, "{0}.txt"
-                                                                      .format(message.channel.id))))
-                    except Exception as e:
-                        embed = discord.Embed(title="guessnum", description="發生錯誤。\n{0}".format(e), color=error_color)
-                        final_msg_list.append(embed)
                 else:
-                    answer_status_str = ""
-                    for n in range(len(answer_status)):
-                        if answer_status[n] == 2:
-                            answer_status[n] = ":green_circle:"
-                        elif answer_status[n] == 1:
-                            answer_status[n] = ":yellow_circle:"
+                    if "guess_times" in game_data.keys():
+                        game_data["guess_times"] += 1
+                    else:
+                        game_data["guess_times"] = 1
+                    current_guess_num = []
+                    target_num_list = []
+                    for i in range(len(msg_in)):
+                        current_guess_num.append(int(msg_in[i]))
+                    for i in range(len(game_data["target_num"])):
+                        target_num_list.append(int(game_data["target_num"][i]))
+                    answer_status = []
+                    for i in range(len(current_guess_num)):
+                        if current_guess_num[i] == target_num_list[i]:
+                            answer_status.append(2)
+                        elif current_guess_num[i] in target_num_list:
+                            answer_status.append(1)
                         else:
-                            answer_status[n] = ":red_circle:"
-                        answer_status_str += answer_status[n]
-                    if ":green_circle:" in answer_status_str:
-                        title = "似乎猜中了一些！"
-                    elif "yellow_circle" in answer_status_str:
-                        title = "接近了！"
+                            answer_status.append(0)
+                    if answer_status == [2, 2, 2, 2]:
+                        embed = discord.Embed(title="guessnum", description="恭喜你答對了！", color=default_color)
+                        embed.add_field(name="答案", value="`{0}`".format(msg_in), inline=False)
+                        embed.add_field(name="次數", value=str(game_data["guess_times"]), inline=False)
+                        final_msg_list.append(embed)
+                        try:
+                            subprocess.Popen("rm {0}".format(os.path.join(game_data_dir, "{0}.txt"
+                                                                          .format(message.channel.id))))
+                        except Exception as e:
+                            embed = discord.Embed(title="guessnum", description="發生錯誤。\n{0}".format(e),
+                                                  color=error_color)
+                            final_msg_list.append(embed)
                     else:
-                        title = "呃...再加把勁！"
-                    embed = discord.Embed(title="guessnum", description=title, color=default_color)
-                    embed.add_field(name="你的答案", value="`{0}`".format(msg_in), inline=False)
-                    embed.add_field(name="結果", value=answer_status_str, inline=False)
-                    embed.set_footer(text="第{0}次猜測".format(str(game_data["guess_times"])))
-                    final_msg_list.append(embed)
-            with open(game_data_dir + str(message.channel.id) + ".txt", "w", encoding="utf-8") as txt:
-                txt.write(str(game_data))
-                txt.close()
+                        answer_status_str = ""
+                        for n in range(len(answer_status)):
+                            if answer_status[n] == 2:
+                                answer_status[n] = ":green_circle:"
+                            elif answer_status[n] == 1:
+                                answer_status[n] = ":yellow_circle:"
+                            else:
+                                answer_status[n] = ":red_circle:"
+                            answer_status_str += answer_status[n]
+                        if ":green_circle:" in answer_status_str:
+                            title = "似乎猜中了一些！"
+                        elif "yellow_circle" in answer_status_str:
+                            title = "接近了！"
+                        else:
+                            title = "呃...再加把勁！"
+                        embed = discord.Embed(title="guessnum", description=title, color=default_color)
+                        embed.add_field(name="你的答案", value="`{0}`".format(msg_in), inline=False)
+                        embed.add_field(name="結果", value=answer_status_str, inline=False)
+                        embed.set_footer(text="第{0}次猜測".format(str(game_data["guess_times"])))
+                        final_msg_list.append(embed)
+                with open(game_data_dir + str(message.channel.id) + ".txt", "w", encoding="utf-8") as txt:
+                    txt.write(str(game_data))
+                    txt.close()
     elif msg_in.startswith("ag!"):
         if msg_in == "ag!test":
             use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
