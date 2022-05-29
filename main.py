@@ -141,7 +141,7 @@ async def on_message(message):
                         embed.add_field(name="發起者", value="<@{0}>".format(starter.id), inline=False)
                         embed.add_field(name="目標數字", value="({0}位數數字)".format(len(target_num)), inline=False)
                         embed.add_field(name="模式", value="同樂模式", inline=False)
-                        embed.add_field(name="發起時間", value="<t:{0}>".format(int(time.time())), inline=False)
+                        embed.add_field(name="發起時間", value="<t:{0}:R>".format(int(time.time())), inline=False)
                         embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id), inline=False)
                         embed.add_field(name="說明", value="[點我](https://is.gd/ZE2aFA)來獲得關於結果的判讀說明。", inline=False)
                         stdb.save_data(starter.id, target_num, message.channel.id)
