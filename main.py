@@ -34,7 +34,10 @@ async def on_message(message):
     msg_in = str(message.content)
     default_color = 0x584BF1
     error_color = 0xF1411C
-    game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
+    if system() == "Windows":
+        game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
+    else:
+        game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "/data/"
     if message.author == client.user:
         return
     elif msg_in.isdigit():
