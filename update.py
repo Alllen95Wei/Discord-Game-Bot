@@ -3,7 +3,7 @@ def update(pid, os):
     from time import sleep
 
     subprocess.run("git fetch --all")
-    subprocess.run("git reset --hard origin/master")
+    subprocess.run("git reset --hard origin/main")
     subprocess.run("git pull")
     sleep(5)
     subprocess.Popen("python main.py", creationflags=subprocess.CREATE_NEW_CONSOLE)
