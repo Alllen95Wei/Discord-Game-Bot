@@ -34,6 +34,7 @@ async def on_message(message):
     msg_in = str(message.content)
     default_color = 0x584BF1
     error_color = 0xF1411C
+    game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
     if message.author == client.user:
         return
     elif msg_in.isdigit():
@@ -42,7 +43,6 @@ async def on_message(message):
         else:
             use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
             log_writter.write_log(use_log)
-            game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
             now_playing_channel = [f for f in os.listdir(game_data_dir) if
                                    os.path.isfile(os.path.join(game_data_dir, f))]
             if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
@@ -150,7 +150,6 @@ async def on_message(message):
                 embed.add_field(name="`about`", value="取得Allen Game Bot的詳細資訊。", inline=False)
                 final_msg_list.append(embed)
             elif parameter[:8] == "guessnum" or parameter[:2] == "gn":
-                game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
                 now_playing_channel = [f for f in os.listdir(game_data_dir) if
                                        os.path.isfile(os.path.join(game_data_dir, f))]
                 if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
@@ -216,7 +215,6 @@ async def on_message(message):
                             embed = discord.Embed(title="guessnum", description="請輸入一個數值。", color=error_color)
                             final_msg_list.append(embed)
             elif parameter[:6] == "cancel":
-                game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
                 now_playing_channel = [f for f in os.listdir(game_data_dir) if
                                        os.path.isfile(os.path.join(game_data_dir, f))]
                 if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
@@ -241,7 +239,6 @@ async def on_message(message):
                     embed = discord.Embed(title="錯誤", description="此頻道目前未正在進行遊戲。", color=error_color)
                     final_msg_list.append(embed)
             elif parameter[:4] == "info":
-                game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "\\data\\"
                 now_playing_channel = [f for f in os.listdir(game_data_dir) if
                                        os.path.isfile(os.path.join(game_data_dir, f))]
                 if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
