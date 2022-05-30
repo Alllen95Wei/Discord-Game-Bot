@@ -4,9 +4,11 @@ from dotenv import load_dotenv
 import os
 from random import randint
 import subprocess
+from platform import system
 
 import log_writter
 import save_to_db as stdb
+import update
 
 intents = discord.Intents.default()
 intents.members = True
@@ -261,14 +263,24 @@ async def on_message(message):
                 embed = discord.Embed(title="about",
                                       description="**Allen Game Bot**是Allen Wei使用discord.py所製作出的Discord Bot。",
                                       color=default_color)
-                embed.add_field(name="程式碼與授權", value="程式碼可在[GitHub](https://github.com/Alllen95Wei/YuriBot)查看。"
+                embed.add_field(name="程式碼與授權", value="程式碼可在[GitHub](https://github.com/Alllen95Wei/DiscordGameBot)查看。"
                                                            "\n本程式依據GPL-3.0 License授權。你可以在[這裡]"
                                                            "(https://github.com/Alllen95Wei/DiscordGameBot/blob/master"
                                                            "/LICENSE)查看條款。")
                 embed.add_field(name="聯絡", value="如果你有任何問題，請聯絡Allen Why#5877。")
-                embed.set_thumbnail(url="https://discord.com/assets/1f0bfc0865d324c2587920a7d80c609b.png")
+                embed.set_thumbnail(url="https://cdn.discordapp.com/app-icons/976070629126201404"
+                                        "/38b89e224ce49dda4105186daabe274f.png?size=512")
                 embed.set_footer(text="©Copyright Allen Wei, 2022.")
                 final_msg_list.append(embed)
+            elif parameter[:6] == "update":
+                if str(message.author) == str(client.get_user(657519721138094080)):
+                    embed = discord.Embed(title="update", description="已嘗試從GitHub取得更新。請稍待。", color=0xFEE4E4)
+                    update.update(os.getpid(), system())
+                    final_msg_list.append(embed)
+                else:
+                    embed = discord.Embed(title="update", description="你並非{0}，因此無權更新程式。"
+                                          .format(client.get_user(657519721138094080)), color=0xF1411C)
+                    final_msg_list.append(embed)
             elif parameter[:4] == "ping":
                 embed = discord.Embed(title="ping", description="延遲：{0}ms"
                                       .format(str(round(client.latency * 1000))), color=default_color)
