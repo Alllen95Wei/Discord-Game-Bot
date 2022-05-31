@@ -9,6 +9,7 @@ from platform import system
 import log_writter
 import save_to_db as stdb
 import update
+import impossible_num_list_to_str as inlts
 
 intents = discord.Intents.default()
 intents.members = True
@@ -97,6 +98,14 @@ async def on_message(message):
                                                   color=error_color)
                             final_msg_list.append(embed)
                     else:
+                        if "impossible_num" not in game_data.keys():
+                            game_data["impossible_num"] = []
+                        impossible_num = game_data["impossible_num"]
+                        for i in range(len(answer_status)):
+                            if answer_status[i] == 0 and current_guess_num[i] not in impossible_num:
+                                impossible_num.append(current_guess_num[i])
+                            impossible_num.sort()
+                        impossible_num_str = inlts.list_to_str(impossible_num)
                         answer_status_str = ""
                         for n in range(len(answer_status)):
                             if answer_status[n] == 2:
@@ -115,11 +124,10 @@ async def on_message(message):
                         embed = discord.Embed(title="guessnum", description=title, color=default_color)
                         embed.add_field(name="你的答案", value="`{0}`".format(msg_in), inline=False)
                         embed.add_field(name="結果", value=answer_status_str, inline=False)
+                        embed.add_field(name="不可能的答案", value=impossible_num_str, inline=False)
                         embed.set_footer(text="第{0}次猜測".format(str(game_data["guess_times"])))
                         final_msg_list.append(embed)
-                with open(game_data_dir + str(message.channel.id) + ".txt", "w", encoding="utf-8") as txt:
-                    txt.write(str(game_data))
-                    txt.close()
+                stdb.save_data(game_data, message.channel.id)
     elif msg_in.startswith("ag!"):
         if msg_in == "ag!test":
             use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
@@ -179,7 +187,8 @@ async def on_message(message):
                         embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id), inline=False)
                         embed.add_field(name="說明", value="[點我](https://is.gd/ZE2aFA)來獲得關於結果的判讀說明。",
                                         inline=False)
-                        stdb.save_data(starter.id, target_num, message.channel.id)
+                        game_data = {"starter": starter.id, "target_num": target_num, "time": int(time.time())}
+                        stdb.save_data(game_data, message.channel.id)
                         final_msg_list.append(embed)
                     else:
                         game_set = parameter.split(" ")
@@ -212,7 +221,8 @@ async def on_message(message):
                                                 inline=False)
                                 embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id),
                                                 inline=False)
-                                stdb.save_data(starter.id, target_num, message.channel.id)
+                                game_data = {"starter": starter.id, "target_num": target_num, "time": int(time.time())}
+                                stdb.save_data(game_data, message.channel.id)
                                 final_msg_list.append(embed)
                         else:
                             embed = discord.Embed(title="guessnum", description="請輸入一個數值。", color=error_color)
