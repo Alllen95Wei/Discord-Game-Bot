@@ -45,11 +45,11 @@ async def on_message(message):
         if test_mode:
             return
         else:
-            use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
-            log_writter.write_log(use_log)
             now_playing_channel = [f for f in os.listdir(game_data_dir) if
                                    os.path.isfile(os.path.join(game_data_dir, f))]
             if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
+                use_log = str(message.channel) + "/" + str(message.author) + ":\n" + msg_in + "\n\n"
+                log_writter.write_log(use_log)
                 with open(game_data_dir + str(message.channel.id) + ".txt", "r", encoding="utf-8") as txt:
                     game_data = eval(txt.read())
                 if len(msg_in) != len(str(game_data["target_num"])):
