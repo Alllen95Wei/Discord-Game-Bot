@@ -187,6 +187,7 @@ async def on_message(message):
                         embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id), inline=False)
                         embed.add_field(name="說明", value="[點我](https://is.gd/ZE2aFA)來獲得關於結果的判讀說明。",
                                         inline=False)
+                        embed.set_footer(text="輸入`ag!cancel`以取消遊戲")
                         game_data = {"starter": starter.id, "target_num": target_num, "time": int(time.time())}
                         stdb.save_data(game_data, message.channel.id)
                         final_msg_list.append(embed)
@@ -221,6 +222,7 @@ async def on_message(message):
                                                 inline=False)
                                 embed.add_field(name="遊玩頻道", value="<#{0}>".format(message.channel.id),
                                                 inline=False)
+                                embed.set_footer(text="輸入`ag!cancel`以取消遊戲")
                                 game_data = {"starter": starter.id, "target_num": target_num, "time": int(time.time())}
                                 stdb.save_data(game_data, message.channel.id)
                                 final_msg_list.append(embed)
