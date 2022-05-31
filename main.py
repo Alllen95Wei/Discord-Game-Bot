@@ -159,6 +159,8 @@ async def on_message(message):
                 embed.add_field(name="`cancel`", value="取消該頻道正在進行的遊戲。", inline=False)
                 embed.add_field(name="`ping`", value="查看本機器人的延遲毫秒數。", inline=False)
                 embed.add_field(name="`about`", value="取得Allen Game Bot的詳細資訊。", inline=False)
+                embed.add_field(name="線上說明", value="你可以[在此](https://github.com/Alllen95Wei"
+                                                      "/DiscordGameBot/wiki/)獲得最新的玩法說明。", inline=False)
                 final_msg_list.append(embed)
             elif parameter[:8] == "guessnum" or parameter[:2] == "gn":
                 now_playing_channel = [f for f in os.listdir(game_data_dir) if
