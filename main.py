@@ -198,8 +198,8 @@ async def on_message(message):
                         del game_set[0]
                         target_num_count = game_set[0]
                         if target_num_count.isdigit():
-                            if int(target_num_count) > 8:
-                                embed = discord.Embed(title="guessnum", description="指定位數最大為8。",
+                            if int(target_num_count) > 20:
+                                embed = discord.Embed(title="guessnum", description="指定位數最大為20。",
                                                       color=error_color)
                                 final_msg_list.append(embed)
                             else:
