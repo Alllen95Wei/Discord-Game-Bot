@@ -1,12 +1,13 @@
 def update(pid, os_name):
+    import shlex
     import subprocess
     from time import sleep
 
-    subprocess.run("git fetch --all")
-    subprocess.run("git reset --hard origin/main")
-    subprocess.run("git pull")
+    subprocess.run(shlex.split("git fetch --all"))
+    subprocess.run(shlex.split("git reset --hard origin/main"))
+    subprocess.run(shlex.split("git pull"))
     sleep(5)
-    subprocess.Popen("python main.py", creationflags=subprocess.CREATE_NEW_CONSOLE)
+    subprocess.Popen("python main.py", shell=True)
     if os_name == "Windows":
         subprocess.run("taskkill /f /PID {0}".format(pid))
     elif os_name == "Linux":
