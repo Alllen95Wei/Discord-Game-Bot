@@ -9,9 +9,9 @@ def update(pid, os_name):
     sleep(5)
     subprocess.Popen("python main.py", shell=True)
     if os_name == "Windows":
-        subprocess.run("taskkill /f /PID {0}".format(pid))
+        subprocess.run(shlex.split("taskkill /f /PID {0}".format(pid)))
     elif os_name == "Linux":
-        subprocess.run("kill -9 {0}".format(pid))
+        subprocess.run(shlex.split("kill -9 {0}".format(pid)))
 
 
 if __name__ == "__main__":
