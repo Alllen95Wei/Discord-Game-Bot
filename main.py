@@ -3,7 +3,6 @@ import discord
 from dotenv import load_dotenv
 import os
 from random import randint
-import subprocess
 from platform import system
 
 import log_writter
@@ -91,8 +90,7 @@ async def on_message(message):
                         embed.add_field(name="用時", value="{0}".format(used_time), inline=False)
                         final_msg_list.append(embed)
                         try:
-                            subprocess.Popen("rm {0}".format(os.path.join(game_data_dir, "{0}.txt"
-                                                                          .format(message.channel.id))))
+                            os.remove("{0}".format(os.path.join(game_data_dir, "{0}.txt".format(message.channel.id))))
                         except Exception as e:
                             embed = discord.Embed(title="guessnum", description="發生錯誤。\n{0}".format(e),
                                                   color=error_color)
@@ -239,8 +237,7 @@ async def on_message(message):
                         game_data = eval(txt.read())
                     if message.author.id == game_data["starter"] or message.author.id == message.guild.owner.id:
                         try:
-                            subprocess.Popen("rm {0}".format(os.path.join(game_data_dir, "{0}.txt"
-                                                                          .format(message.channel.id))))
+                            os.remove("{0}".format(os.path.join(game_data_dir, "{0}.txt".format(message.channel.id))))
                             embed = discord.Embed(title="cancel", description="已取消遊戲。", color=default_color)
                             final_msg_list.append(embed)
                         except Exception as e:
