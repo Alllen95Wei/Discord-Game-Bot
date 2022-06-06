@@ -1,5 +1,4 @@
 import subprocess
-
 import time
 import discord
 from dotenv import load_dotenv
@@ -93,8 +92,7 @@ async def on_message(message):
                         embed.add_field(name="用時", value="{0}".format(used_time), inline=False)
                         final_msg_list.append(embed)
                         try:
-                            subprocess.run("rm {0}".format(os.path.join(game_data_dir,
-                                                                        "{0}.txt".format(message.channel.id))))
+                            subprocess.run(["rm", os.path.join(game_data_dir, "{0}.txt".format(message.channel.id))])
                         except Exception as e:
                             embed = discord.Embed(title="guessnum", description="發生錯誤。\n{0}".format(e),
                                                   color=error_color)
@@ -242,8 +240,7 @@ async def on_message(message):
                         game_data = eval(txt.read())
                     if message.author.id == game_data["starter"] or message.author.id == message.guild.owner.id:
                         try:
-                            subprocess.run("rm {0}".format(os.path.join(game_data_dir,
-                                                                        "{0}.txt".format(message.channel.id))))
+                            subprocess.run(["rm", os.path.join(game_data_dir, "{0}.txt".format(message.channel.id))])
                             embed = discord.Embed(title="cancel", description="已取消遊戲。", color=default_color)
                             final_msg_list.append(embed)
                         except Exception as e:
@@ -310,6 +307,9 @@ async def on_message(message):
             elif parameter[:4] == "ping":
                 embed = discord.Embed(title="ping", description="延遲：{0}ms"
                                       .format(str(round(client.latency * 1000))), color=default_color)
+                final_msg_list.append(embed)
+            else:
+                embed = discord.Embed(title="錯誤", description="參數`{0}`", color=error_color)
                 final_msg_list.append(embed)
     for i in range(len(final_msg_list)):
         current_msg = final_msg_list[i]
