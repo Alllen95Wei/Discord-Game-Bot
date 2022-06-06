@@ -1,3 +1,5 @@
+import subprocess
+
 import time
 import discord
 from dotenv import load_dotenv
@@ -8,7 +10,7 @@ from platform import system
 import log_writter
 import save_to_db as stdb
 import update
-import impossible_num_list_to_str as inlts
+import num_list_to_str as nlts
 
 intents = discord.Intents.default()
 intents.members = True
@@ -52,8 +54,8 @@ async def on_message(message):
                 with open(game_data_dir + str(message.channel.id) + ".txt", "r", encoding="utf-8") as txt:
                     game_data = eval(txt.read())
                 if len(msg_in) != len(str(game_data["target_num"])):
-                    embed = discord.Embed(title="guessnum", description="請輸入{0}位數的數字。"
-                                          .format(len(str(game_data["target_num"]))), color=error_color)
+                    embed = discord.Embed(title="guessnum", description="你輸入了{0}位數。請輸入{1}位數的數字。"
+                                          .format(len(msg_in), len(str(game_data["target_num"]))), color=error_color)
                     final_msg_list.append(embed)
                 else:
                     if "guess_times" in game_data.keys():
@@ -80,7 +82,8 @@ async def on_message(message):
                             correct_answer_count += 1
                     if correct_answer_count == len(answer_status):
                         embed = discord.Embed(title="guessnum", description="恭喜你答對了！", color=default_color)
-                        embed.add_field(name="答案", value="`{0}`".format(msg_in), inline=False)
+                        embed.add_field(name="答案", value="{0}".format(nlts.list_to_str(current_guess_num)),
+                                        inline=False)
                         embed.add_field(name="次數", value=str(game_data["guess_times"]), inline=False)
                         used_time = int(time.time()) - int(game_data["time"])
                         if used_time >= 60:
@@ -90,7 +93,8 @@ async def on_message(message):
                         embed.add_field(name="用時", value="{0}".format(used_time), inline=False)
                         final_msg_list.append(embed)
                         try:
-                            os.remove("{0}".format(os.path.join(game_data_dir, "{0}.txt".format(message.channel.id))))
+                            subprocess.run("rm {0}".format(os.path.join(game_data_dir,
+                                                                        "{0}.txt".format(message.channel.id))))
                         except Exception as e:
                             embed = discord.Embed(title="guessnum", description="發生錯誤。\n{0}".format(e),
                                                   color=error_color)
@@ -103,7 +107,7 @@ async def on_message(message):
                             if answer_status[i] == 0 and current_guess_num[i] not in impossible_num:
                                 impossible_num.append(current_guess_num[i])
                             impossible_num.sort()
-                        impossible_num_str = inlts.list_to_str(impossible_num)
+                        impossible_num_str = nlts.list_to_str(impossible_num)
                         answer_status_str = ""
                         for n in range(len(answer_status)):
                             if answer_status[n] == 2:
@@ -120,7 +124,8 @@ async def on_message(message):
                         else:
                             title = "呃...再加把勁！"
                         embed = discord.Embed(title="guessnum", description=title, color=default_color)
-                        embed.add_field(name="你的答案", value="`{0}`".format(msg_in), inline=False)
+                        embed.add_field(name="你的答案", value="{0}".format(nlts.list_to_str(current_guess_num)),
+                                        inline=False)
                         embed.add_field(name="結果", value=answer_status_str, inline=False)
                         embed.add_field(name="不可能的答案", value=impossible_num_str, inline=False)
                         embed.set_footer(text="第{0}次猜測".format(str(game_data["guess_times"])))
@@ -237,7 +242,8 @@ async def on_message(message):
                         game_data = eval(txt.read())
                     if message.author.id == game_data["starter"] or message.author.id == message.guild.owner.id:
                         try:
-                            os.remove("{0}".format(os.path.join(game_data_dir, "{0}.txt".format(message.channel.id))))
+                            subprocess.run("rm {0}".format(os.path.join(game_data_dir,
+                                                                        "{0}.txt".format(message.channel.id))))
                             embed = discord.Embed(title="cancel", description="已取消遊戲。", color=default_color)
                             final_msg_list.append(embed)
                         except Exception as e:
@@ -245,7 +251,7 @@ async def on_message(message):
                                                   color=error_color)
                             final_msg_list.append(embed)
                     else:
-                        msg = "你沒有權限進行此操作。請聯絡發起者(<@{0}>)或伺服器擁有者(<@{1})進行此操作。".format(
+                        msg = "你沒有權限進行此操作。請聯絡發起者(<@{0}>)或伺服器擁有者(<@{1}>)進行此操作。".format(
                             game_data["starter"], message.guild.owner.id)
                         embed = discord.Embed(title="cancel", description=msg, color=error_color)
                         final_msg_list.append(embed)
@@ -291,6 +297,15 @@ async def on_message(message):
                 else:
                     embed = discord.Embed(title="update", description="你並非{0}，因此無權更新程式。"
                                           .format(client.get_user(657519721138094080)), color=0xF1411C)
+                    final_msg_list.append(embed)
+            elif parameter[:7] == "restart":
+                if str(message.author) == str(client.get_user(657519721138094080)):
+                    embed = discord.Embed(title="update", description="已嘗試重啟機器人。請稍待。", color=0xFEE4E4)
+                    update.restart(os.getpid(), system())
+                    final_msg_list.append(embed)
+                else:
+                    embed = discord.Embed(title="update", description="你並非<@657519721138094080>，因此無權重啟機器人。",
+                                          color=0xF1411C)
                     final_msg_list.append(embed)
             elif parameter[:4] == "ping":
                 embed = discord.Embed(title="ping", description="延遲：{0}ms"
