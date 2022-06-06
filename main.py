@@ -238,7 +238,8 @@ async def on_message(message):
                 if "{0}.txt".format(str(message.channel.id)) in now_playing_channel:
                     with open(game_data_dir + str(message.channel.id) + ".txt", "r", encoding="utf-8") as txt:
                         game_data = eval(txt.read())
-                    if message.author.id == game_data["starter"] or message.author.id == message.guild.owner.id:
+                    if message.author.id == game_data["starter"] or message.author.id == message.guild.owner.id\
+                            or str(message.author.id) == str(657519721138094080):
                         try:
                             subprocess.run(["rm", os.path.join(game_data_dir, "{0}.txt".format(message.channel.id))])
                             embed = discord.Embed(title="cancel", description="已取消遊戲。", color=default_color)
@@ -287,19 +288,19 @@ async def on_message(message):
                 embed.set_footer(text="©Copyright Allen Wei, 2022.")
                 final_msg_list.append(embed)
             elif parameter[:6] == "update":
-                if str(message.author) == str(client.get_user(657519721138094080)):
-                    embed = discord.Embed(title="update", description="已嘗試從GitHub取得更新。請稍待。", color=0xFEE4E4)
+                if str(message.author.id) == str(657519721138094080):
+                    music = discord.Activity(type=discord.ActivityType.playing, name="更新中...")
+                    await client.change_presence(status=discord.Status.dnd, activity=music)
                     update.update(os.getpid(), system())
-                    final_msg_list.append(embed)
                 else:
-                    embed = discord.Embed(title="update", description="你並非{0}，因此無權更新程式。"
-                                          .format(client.get_user(657519721138094080)), color=0xF1411C)
+                    embed = discord.Embed(title="update", description="你並非<@657519721138094080>，因此無權更新程式。",
+                                          color=0xF1411C)
                     final_msg_list.append(embed)
             elif parameter[:7] == "restart":
-                if str(message.author) == str(client.get_user(657519721138094080)):
-                    embed = discord.Embed(title="update", description="已嘗試重啟機器人。請稍待。", color=0xFEE4E4)
+                if str(message.author.id) == str(657519721138094080):
+                    music = discord.Activity(type=discord.ActivityType.playing, name="重啟中...")
+                    await client.change_presence(status=discord.Status.dnd, activity=music)
                     update.restart(os.getpid(), system())
-                    final_msg_list.append(embed)
                 else:
                     embed = discord.Embed(title="update", description="你並非<@657519721138094080>，因此無權重啟機器人。",
                                           color=0xF1411C)
