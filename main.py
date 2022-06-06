@@ -310,7 +310,8 @@ async def on_message(message):
                                       .format(str(round(client.latency * 1000))), color=default_color)
                 final_msg_list.append(embed)
             else:
-                embed = discord.Embed(title="錯誤", description="參數`{0}`", color=error_color)
+                embed = discord.Embed(title="錯誤", description="參數`{0}`不存在。請輸入`ag!help`獲得協助。".format(parameter),
+                                      color=error_color)
                 final_msg_list.append(embed)
     for i in range(len(final_msg_list)):
         current_msg = final_msg_list[i]
