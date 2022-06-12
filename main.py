@@ -157,6 +157,9 @@ async def on_message(message):
                 embed.add_field(name="`guessnum(gn) [指定位數]`",
                                 value="開始猜數字遊戲。\n  `[指定位數]`：可指定機器人產生隨機數的位數。",
                                 inline=False)
+                embed.add_field(name="`dice [指定骰子數] [指定骰子面數]`",
+                                value="擲骰子。\n  `[指定骰子數]`：可指定擲骰子的數量。\n  `[指定骰子面數]`：可指定擲骰子的面數。",
+                                inline=False)
                 embed.add_field(name="`cancel`", value="取消該頻道正在進行的遊戲。", inline=False)
                 embed.add_field(name="`ping`", value="查看本機器人的延遲毫秒數。", inline=False)
                 embed.add_field(name="`about`", value="取得Allen Game Bot的詳細資訊。", inline=False)
@@ -255,6 +258,45 @@ async def on_message(message):
                         final_msg_list.append(embed)
                 else:
                     embed = discord.Embed(title="錯誤", description="此頻道目前未正在進行遊戲。", color=error_color)
+                    final_msg_list.append(embed)
+            elif parameter[:4] == "dice":
+                dice_num = 0
+                dice_side = 0
+                if parameter == "dice":
+                    dice_num = 1
+                    dice_side = 6
+                else:
+                    dice_set = parameter.split(" ")
+                    del dice_set[0]
+                    if len(dice_set) == 1:
+                        if dice_set[0].isdigit():
+                            dice_num = 1
+                            dice_side = int(dice_set[0])
+                        else:
+                            embed = discord.Embed(title="錯誤", description="請輸入一個**整數數值**。", color=error_color)
+                            final_msg_list.append(embed)
+                    elif len(dice_set) == 2:
+                        if dice_set[0].isdigit() and dice_set[1].isdigit():
+                            dice_num = int(dice_set[0])
+                            dice_side = int(dice_set[1])
+                        else:
+                            embed = discord.Embed(title="錯誤", description="請輸入**整數數值**。", color=error_color)
+                            final_msg_list.append(embed)
+                    else:
+                        embed = discord.Embed(title="錯誤", description="最多輸入**2個**參數。", color=error_color)
+                        final_msg_list.append(embed)
+                if dice_num > 0 and dice_side > 0:
+                    dice_result_list = []
+                    dice_result_sum = 0
+                    for i in range(dice_num):
+                        dice_result = randint(1, dice_side)
+                        dice_result_list.append(dice_result)
+                        dice_result_sum += dice_result
+                    embed = discord.Embed(title="dice",
+                                          description="共擲出了{0}個{1}面的骰子。結果如下：".format(dice_num, dice_side),
+                                          color=default_color)
+                    embed.add_field(name="結果", value=str(dice_result_list), inline=False)
+                    embed.add_field(name="總和", value=str(dice_result_sum), inline=False)
                     final_msg_list.append(embed)
             elif parameter[:4] == "info":
                 now_playing_channel = [f for f in os.listdir(game_data_dir) if
