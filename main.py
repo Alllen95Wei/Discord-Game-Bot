@@ -11,15 +11,14 @@ import save_to_db as stdb
 import update
 import num_list_to_str as nlts
 
-intents = discord.Intents.default()
-intents.members = True
+intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 
 
 @client.event
 async def on_ready():
-    music = discord.Activity(type=discord.ActivityType.playing, name="猜數字遊戲(？)")
-    await client.change_presence(status=discord.Status.online, activity=music)
+    event = discord.Activity(type=discord.ActivityType.playing, name="猜數字遊戲(？)")
+    await client.change_presence(status=discord.Status.online, activity=event)
     log_writter.write_log("-------------------------------------------------------------\n", True)
     log_writter.write_log("\n登入成功！\n目前登入身份：" +
                           str(client.user) + "\n以下為使用紀錄(只要開頭訊息有\"ag!\"，則這則訊息和系統回應皆會被記錄)：\n\n")
@@ -32,7 +31,7 @@ test_mode = False
 async def on_message(message):
     global test_mode
     final_msg_list = []
-    msg_in = str(message.content)
+    msg_in = message.content
     default_color = 0x584BF1
     error_color = 0xF1411C
     if system() == "Windows":
@@ -41,7 +40,7 @@ async def on_message(message):
         game_data_dir = os.path.abspath(os.path.dirname(__file__)) + "/data/"
     if message.author == client.user:
         return
-    elif msg_in.isdigit():
+    if msg_in.isdigit():
         if test_mode:
             return
         else:
